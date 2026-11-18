@@ -1,0 +1,8 @@
+﻿Vertex,Init,Round 1,Round 2,Round 3,Round 4,Round 5,Round 6
+S,S,S,S,S,S,S,S
+A,—,S → A,S → B → A,S → B → A,S → B → A,S → B → A,S → B → A
+B,—,S → B,S → B,S → B,S → B,S → B,S → B
+C,—,S → C,S → A → C,S → B → A → C,S → B → A → C,S → B → A → C,S → B → A → C
+D,—,—,S → B → D,S → B → A → D,S → B → A → D,S → B → A → C → E → D,S → B → A → C → E → D
+E,—,—,S → C → E,S → A → C → E,S → B → A → C → E,S → B → A → C → E,S → B → A → C → E
+F,—,—,—,S → C → E → F,S → A → C → E → F,S → B → A → C → E → F,S → B → A → C → E → F
