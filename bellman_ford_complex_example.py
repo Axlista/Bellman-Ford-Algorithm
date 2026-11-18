@@ -19,7 +19,7 @@ from pathlib import Path
 VERTICES = ["S", "A", "B", "C", "D", "E", "F"]
 # 邊順序與 PPT 的 Edge Relaxation Table 相同
 EDGES = [
-    ("S", "A", 7), ("S", "B", 4), ("S", "C", 12),
+    ("S", "A", 2), ("S", "B", 4), ("S", "C", 12),
     ("A", "C", 2), ("A", "D", 5), ("B", "A", -3),
     ("B", "D", 7), ("C", "E", -4), ("D", "E", 2),
     ("D", "F", 6), ("E", "D", 3), ("E", "F", 2),
