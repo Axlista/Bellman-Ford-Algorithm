@@ -6,9 +6,13 @@
   python bellman_ford_complex_example.py
   python bellman_ford_complex_example.py --show-edges
   python bellman_ford_complex_example.py --output-dir ./results
+
+預設所有輸出檔案儲存至 ./outputs/。
 """
 import argparse
 import csv
+import io
+from contextlib import redirect_stdout
 from math import inf
 from pathlib import Path
 
@@ -100,8 +104,8 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--show-edges", action="store_true",
                         help="顯示所有 Edge 的逐輪計算")
-    parser.add_argument("--output-dir", default=".", type=Path,
-                        help="CSV 輸出資料夾（預設目前資料夾）")
+    parser.add_argument("--output-dir", default=Path("outputs"), type=Path,
+                        help="輸出資料夾（預設 ./outputs）")
     args = parser.parse_args()
     args.output_dir.mkdir(parents=True, exist_ok=True)
     dh, ph, er, neg, early = bellman_ford(VERTICES, EDGES, "S")
@@ -111,23 +115,40 @@ def main():
     edge_headers = ["Iteration", "Edge", "u", "v", "w(u,v)",
                     "d_(k-1)(u)", "Candidate", "next[v] before", "Updated"]
 
-    print("Bellman-Ford (Synchronous Relaxation)")
-    print(f"V={len(VERTICES)}, E={len(EDGES)}")
-    print_table(headers, distance_rows)
-    print("\nFinal shortest paths:")
-    for v in VERTICES:
-        print(f"  {v}: {show_distance(dh[-1][v]):>2} | {show_path(ph[-1][v])}")
-    print("\nNegative Cycle:", "Detected" if neg else "Not detected")
-    if early:
-        print(f"Early termination: no updates in iteration {len(dh)-1}")
-    if args.show_edges:
-        print("\nEdge Relaxation Table:")
-        print_table(edge_headers, er, separate_iterations=True)
-
+    # 三份 CSV 與完整 TXT 報告都儲存至指定的 outputs 資料夾
     write_csv(args.output_dir / "bellman_ford_distance_table.csv", headers, distance_rows)
     write_csv(args.output_dir / "bellman_ford_path_table.csv", headers, path_rows)
     write_csv(args.output_dir / "bellman_ford_edge_relaxation_table.csv", edge_headers, er)
-    print(f"\n3 CSV files saved to {args.output_dir.resolve()}")
+
+    # 建立摘要輸出，方便在終端機閱讀
+    summary_buffer = io.StringIO()
+    with redirect_stdout(summary_buffer):
+        print("Bellman-Ford (Synchronous Relaxation)")
+        print(f"V={len(VERTICES)}, E={len(EDGES)}")
+        print("\nDistance Update Table:")
+        print_table(headers, distance_rows)
+        print("\nFinal shortest paths:")
+        for v in VERTICES:
+            print(f"  {v}: {show_distance(dh[-1][v]):>2} | {show_path(ph[-1][v])}")
+        print("\nNegative Cycle:", "Detected" if neg else "Not detected")
+        if early:
+            print(f"Early termination: no updates in iteration {len(dh)-1}")
+    summary = summary_buffer.getvalue()
+
+    # TXT 檔案一定包含所有 Iteration 的 Edge Relaxation Table 與虛線
+    edge_buffer = io.StringIO()
+    with redirect_stdout(edge_buffer):
+        print("Edge Relaxation Table:")
+        print_table(edge_headers, er, separate_iterations=True)
+    edge_report = edge_buffer.getvalue()
+
+    report_path = args.output_dir / "bellman_ford_output_with_dividers.txt"
+    report_path.write_text(summary + "\n" + edge_report, encoding="utf-8")
+
+    print(summary, end="")
+    if args.show_edges:
+        print("\n" + edge_report, end="")
+    print(f"\n4 output files saved to {args.output_dir.resolve()}")
 
 if __name__ == "__main__":
     main()
