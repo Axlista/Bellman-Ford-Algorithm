@@ -1,4 +1,4 @@
-﻿Vertex,Init,Round 1,Round 2,Round 3,Round 4,Round 5,Round 6
+﻿Vertex,Init,Iteration 1,Iteration 2,Iteration 3,Iteration 4,Iteration 5,Iteration 6
 S,S,S,S,S,S,S,S
 A,—,S → A,S → B → A,S → B → A,S → B → A,S → B → A,S → B → A
 B,—,S → B,S → B,S → B,S → B,S → B,S → B

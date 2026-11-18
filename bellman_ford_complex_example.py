@@ -78,13 +78,23 @@ def write_csv(path, headers, rows):
         writer.writerow(headers)
         writer.writerows(rows)
 
-def print_table(headers, rows):
+def print_table(headers, rows, separate_iterations=False):
+    """輸出對齊表格；可在不同 Iteration 之間加入虛線。"""
     widths = [max(len(str(r[i])) for r in [headers, *rows])
               for i in range(len(headers))]
-    for j, row in enumerate([headers, *rows]):
-        print(" | ".join(str(item).ljust(widths[i]) for i, item in enumerate(row)))
-        if j == 0:
-            print("-+-".join("-" * w for w in widths))
+    header_line = " | ".join(str(item).ljust(widths[i])
+                             for i, item in enumerate(headers))
+    separator = "-+-".join("-" * w for w in widths)
+    dashed_line = "- " * ((len(header_line) + 1) // 2)
+
+    print(header_line)
+    print(separator)
+    for index, row in enumerate(rows):
+        # 在前後兩筆的 Iteration 編號不同時，插入虛線區隔
+        if separate_iterations and index > 0 and row[0] != rows[index - 1][0]:
+            print(dashed_line[:len(header_line)])
+        print(" | ".join(str(item).ljust(widths[i])
+                         for i, item in enumerate(row)))
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
@@ -95,10 +105,10 @@ def main():
     args = parser.parse_args()
     args.output_dir.mkdir(parents=True, exist_ok=True)
     dh, ph, er, neg, early = bellman_ford(VERTICES, EDGES, "S")
-    headers = ["Vertex", "Init"] + [f"Round {k}" for k in range(1, len(dh))]
+    headers = ["Vertex", "Init"] + [f"Iteration {k}" for k in range(1, len(dh))]
     distance_rows = [[v] + [show_distance(h[v]) for h in dh] for v in VERTICES]
     path_rows = [[v] + [show_path(h[v]) for h in ph] for v in VERTICES]
-    edge_headers = ["Round", "Edge", "u", "v", "w(u,v)",
+    edge_headers = ["Iteration", "Edge", "u", "v", "w(u,v)",
                     "d_(k-1)(u)", "Candidate", "next[v] before", "Updated"]
 
     print("Bellman-Ford (Synchronous Relaxation)")
@@ -109,10 +119,10 @@ def main():
         print(f"  {v}: {show_distance(dh[-1][v]):>2} | {show_path(ph[-1][v])}")
     print("\nNegative Cycle:", "Detected" if neg else "Not detected")
     if early:
-        print(f"Early termination: no updates in round {len(dh)-1}")
+        print(f"Early termination: no updates in iteration {len(dh)-1}")
     if args.show_edges:
         print("\nEdge Relaxation Table:")
-        print_table(edge_headers, er)
+        print_table(edge_headers, er, separate_iterations=True)
 
     write_csv(args.output_dir / "bellman_ford_distance_table.csv", headers, distance_rows)
     write_csv(args.output_dir / "bellman_ford_path_table.csv", headers, path_rows)
